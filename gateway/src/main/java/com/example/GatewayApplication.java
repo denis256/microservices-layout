@@ -1,8 +1,10 @@
 package com.example;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -16,7 +18,7 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableZuulProxy
-
+@EnableCircuitBreaker
 public class GatewayApplication {
 
 	public static void main(String[] args) {
@@ -38,6 +40,11 @@ class GatewayController {
 	@Autowired
 	private RestTemplate restTemplate;
 
+	public String fallback() {
+		return "Service not available";
+	}
+
+	@HystrixCommand(fallbackMethod = "fallback")
 	@GetMapping("/list")
 	public String list() {
 		System.out.println("Loading list");
